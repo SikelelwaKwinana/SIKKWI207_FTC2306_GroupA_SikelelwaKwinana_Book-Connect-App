@@ -5,7 +5,8 @@
 
 * A web application for a small startup called Book Contect. It has a list of books available for users to search and preview the books. 
 
-* Satisfies the following User Stories
+# Satisfies the following User Stories
+
 >As a user, I want to view a list of book previews, by title and author, so that I can discover new books to read.
 >As a user, I want an image associated with all book previews so that I can recognize a book by the cover even if   forgot the name.
 >As a user, I want to have the option of reading a summary of the book so that I can decide whether I want to read it.
