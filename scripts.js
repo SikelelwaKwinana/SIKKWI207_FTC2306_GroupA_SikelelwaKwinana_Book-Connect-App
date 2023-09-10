@@ -72,12 +72,10 @@ if (
 }
 
 htmlElements.settings.form.addEventListener("submit", (event) => {
-  // user selects dark/light
   event.preventDefault();
   const formSubmit = new FormData(event.target);
   const submit = Object.fromEntries(formSubmit);
 
-  // Use the theme the user selected
   document.documentElement.style.setProperty(
     "--color-light",
     themes[submit.theme][0]
@@ -107,6 +105,7 @@ htmlElements.settings.cancel.addEventListener("click", () => {
 function displayBookWithElements(book) {
   const { author, id, image, title } = book;
   const authorName = authors[author];
+
   // Create a container for the book
   const bookContainer = document.createElement("div");
   bookContainer.classList.add("book-container");
@@ -122,7 +121,6 @@ function displayBookWithElements(book) {
   bookContainer.dataset.id = id;
 
   bookContainer.innerHTML =
-    /* html */
     /* html */ `
              <img
                  class="preview__image"
@@ -154,13 +152,14 @@ function showBookDetails(book) {
   // Show the modal
   htmlElements.preview.overlay.style.display = "block";
 }
-htmlElements.preview.close.addEventListener("click", () => {
+  htmlElements.preview.close.addEventListener("click", () => {
   // Hide the modal
   htmlElements.preview.overlay.style.display = "none";
 });
 
 // Function to display all books using event handlers
 function displayAllBooks() {
+    
   // Clear the existing book list
   htmlElements.main.items.innerHTML = "";
 
@@ -209,9 +208,6 @@ function openSearchOverlay() {
   // Show the search overlay
   htmlElements.search.overlay.style.display = "block";
 
-  //focus on the for/ didn't though
-  htmlElements.search.form.focus();
-
   // Add a class to disable the page
   document.body.classList.add("disabled-page");
 }
@@ -221,10 +217,9 @@ htmlElements.header.search.addEventListener("click", openSearchOverlay);
 
 // Event listener to close the search overlay when the cancel button is clicked
 htmlElements.search.cancel.addEventListener("click", () => {
-  // Hide the search overlay
-  htmlElements.search.overlay.style.display = "none";
-  // Remove the class to enable the page
-  document.body.classList.remove("disabled-page");
+
+  htmlElements.search.overlay.style.display = "none";// Hide the search overlay
+  document.body.classList.remove("disabled-page");// Remove the class to enable the page
 });
 
 // Function to filter books based on search criteria
@@ -248,6 +243,7 @@ function filterBooks() {
       bookTitle.includes(title) && isGenreMatch && bookAuthor.includes(author)
     );
   });
+
   // Update the extracted books with the filtered books
   extracted.length = 0;
   Array.prototype.push.apply(extracted, filteredBooks.slice(0, BOOKS_PER_PAGE));
@@ -281,6 +277,7 @@ htmlElements.search.search.addEventListener("click", (event) => {
   event.preventDefault();
   filterBooks(); // Call the filterBooks function to filter books
 });
+
 //Event listener to trigger the filterBooks function when the search form is submitted
 htmlElements.search.form.addEventListener("submit", (event) => {
   event.preventDefault(); // Prevent the form from submitting
@@ -303,6 +300,7 @@ function populateAuthorOptions() {
 }
 // Call the function to populate genre options
 populateAuthorOptions();
+
 //Function to populate the genre select element
 function populateGenreOptions() {
   const genreSelect = htmlElements.search.genre;
