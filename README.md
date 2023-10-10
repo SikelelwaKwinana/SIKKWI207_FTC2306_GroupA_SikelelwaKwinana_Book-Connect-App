@@ -20,4 +20,4 @@
 # The outcome is achieved using JavaScript, HTML, and CSS.
 
 # Presentation 
-\https://docs.google.com/presentation/d/1zQLkXJcM4-kf_a730KgiTFb_02volV8AZ2V7NM_mcaM/edit?usp=sharing
+https://docs.google.com/presentation/d/1zQLkXJcM4-kf_a730KgiTFb_02volV8AZ2V7NM_mcaM/edit?usp=sharing

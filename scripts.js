@@ -1,11 +1,16 @@
 import { BOOKS_PER_PAGE, authors, books, genres } from "./data.js";
 
 /**
- * This object gets and houses all the html elements used in this file for easy
- * access.
+ * This object gets and houses all the HTML elements used in this file for easy access.
  *
- * @type {object}
+ * @typedef {Object} HTMLElements
+ * @property {Object} header - HTML elements related to the header.
+ * @property {Object} main - HTML elements related to the main content.
+ * @property {Object} preview - HTML elements for book previews.
+ * @property {Object} search - HTML elements for the search overlay.
+ * @property {Object} settings - HTML elements for the settings overlay.
  */
+
 const htmlElements = {
   header: {
     search: document.querySelector("[data-header-search]"),
@@ -50,78 +55,79 @@ const htmlElements = {
 const extracted = books.slice(0, BOOKS_PER_PAGE);
 
 let totalBooksShown = 0;
-let range = 1;
 
-if (!books && !Array.isArray(books)) throw new Error("Source required");
-if (!range && range.length < 2)
-  throw new Error("Range must be an array with two numbers");
-
-//Theme variables
+/**
+ * Theme variables for the application.
+ * @typedef {Object} Themes
+ * @property {string[]} day - Colors for the "day" theme.
+ * @property {string[]} night - Colors for the "night" theme.
+ */
 const themes = {
   day: ["255, 255, 255", "10, 10, 20"],
   night: ["10, 10, 20", "255, 255, 255"],
 };
 // Adjusts theme on open according to users pc preference
-if (
-  window.matchMedia &&
-  window.matchMedia("(prefers-color-scheme: dark)").matches
-) {
-  htmlElements.settings.theme.value = "night";
-} else {
-  htmlElements.settings.theme.value = "day";
-}
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    htmlElements.settings.theme.value = "night";
+  } else {
+    htmlElements.settings.theme.value = "day";
+  }
 
 htmlElements.settings.form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const formSubmit = new FormData(event.target);
-  const submit = Object.fromEntries(formSubmit);
+    event.preventDefault();
+    const formSubmit = new FormData(event.target);
+    const submit = Object.fromEntries(formSubmit);
 
-  document.documentElement.style.setProperty(
-    "--color-light",
-    themes[submit.theme][0]
-  );
-  document.documentElement.style.setProperty(
-    "--color-dark",
-    themes[submit.theme][1]
-  );
-
-  htmlElements.settings.overlay.close();
+    document.documentElement.style.setProperty(
+      "--color-light",
+      themes[submit.theme][0]
+    );
+    document.documentElement.style.setProperty(
+      "--color-dark",
+      themes[submit.theme][1]
+    );
 });
 
 // Opens settings and focuses on themes
-htmlElements.header.settings.addEventListener("click", () => {
-  htmlElements.settings.theme.focus();
-  htmlElements.settings.overlay.showModal();
+      htmlElements.header.settings.addEventListener("click", () => {
+      htmlElements.settings.theme.focus();
+      htmlElements.settings.overlay.showModal();
 });
 
 // Add event listener for cancel button
-htmlElements.settings.cancel.addEventListener("click", () => {
-  // "cancel" clicked closes setting bar
-  htmlElements.settings.overlay.close();
-  htmlElements.settings.form.reset();
+      htmlElements.settings.cancel.addEventListener("click", () => {
+      htmlElements.settings.overlay.close();
+     
 });
 
-// Function to display a book with picture, title, and author using htmlElements
+/**
+ * Creates an HTML container for displaying a book with its picture, title, and author.
+ *
+ * @param {book} book - The book object to display.
+ * @returns {HTMLElement} - The HTML container for the book.
+ * Populate the book container with HTML content
+ * Add Event listener to show the book's details when the page loads.
+ */
+
 function displayBookWithElements(book) {
   const { author, id, image, title } = book;
   const authorName = authors[author];
 
-  // Create a container for the book
   const bookContainer = document.createElement("div");
   bookContainer.classList.add("book-container");
 
   bookContainer.className = "preview";
 
-  // Add a click event listener to show the book's details
   bookContainer.addEventListener("click", () => {
     showBookDetails(book);
   });
 
-  // Set the dataset for the book
   bookContainer.dataset.id = id;
 
-  bookContainer.innerHTML =
-    /* html */ `
+  bookContainer.innerHTML = /* html */ `
              <img
                  class="preview__image"
                  src="${image}"
@@ -135,168 +141,204 @@ function displayBookWithElements(book) {
          `;
   return bookContainer;
 }
+
+/**
+ * Populate the book details in the preview modal overlay.
+ * From the data.js file.
+ * 
+ * @param {book} book - The book object whose details will be displayed.
+ */
+
 function showBookDetails(book) {
-  // Populate the modal with book details
   const { image, title, author, published, description } = book;
 
-  // Extract the year from the published date
   const publishedDate = new Date(published);
   const year = publishedDate.getFullYear();
 
-  // Set the modal content
-  htmlElements.preview.image.src = image;
-  htmlElements.preview.title.textContent = title;
-  htmlElements.preview.subtitle.textContent = `${authors[author]} (${year})`;
-  htmlElements.preview.description.textContent = description;
-
-  // Show the modal
-  htmlElements.preview.overlay.style.display = "block";
+  
+      htmlElements.preview.image.src = image;
+      htmlElements.preview.title.textContent = title;
+      htmlElements.preview.subtitle.textContent = `${authors[author]} (${year})`;
+      htmlElements.preview.description.textContent = description;
 }
-  htmlElements.preview.close.addEventListener("click", () => {
-  // Hide the modal
-  htmlElements.preview.overlay.style.display = "none";
+      /**
+       * Event listener to open the book details modal overlay when a book is clicked.
+      */
+      htmlElements.main.items.addEventListener("click", () => {
+      htmlElements.preview.overlay.focus();
+      htmlElements.preview.overlay.showModal();
+});
+      /**
+       * Event listener to close the book details modal overlay.
+      */
+      htmlElements.preview.close.addEventListener("click", () => {
+      htmlElements.preview.overlay.close();
 });
 
-// Function to display all books using event handlers
+/**
+ * Displays books in the main container based on the current genre and pagination.
+*/
+
 function displayAllBooks() {
     
-  // Clear the existing book list
-  htmlElements.main.items.innerHTML = "";
+      htmlElements.main.items.innerHTML = "";
 
-  // Calculate the remaining books to show based on the current genre
-  const genreId = htmlElements.search.genre.value;
-  const filteredBooks = books.filter((book) => {
-    const bookGenres = book.genres.map((genreId) =>
-      genres[genreId].toLowerCase()
-    );
-    return genreId === "" || bookGenres.includes(genres[genreId].toLowerCase());
-  });
+      // Calculate the remaining books to show based on the current genre
+        const genreId = htmlElements.search.genre.value;
+        const filteredBooks = books.filter((book) => {
+        const bookGenres = book.genres.map((genreId) =>
+          genres[genreId].toLowerCase()
+        );
+        return genreId === "" || bookGenres.includes(genres[genreId].toLowerCase());
+      });
 
   // Calculate the remaining books to show
   const remainingBooks = filteredBooks.length - totalBooksShown;
   const booksToDisplay = Math.min(remainingBooks, BOOKS_PER_PAGE);
 
-  // Loop through extracted books and add event listeners to display each one
-  for (let i = totalBooksShown; i < totalBooksShown + booksToDisplay; i++) {
-    const book = filteredBooks[i];
-    if (!book) break; // Break if there are no more books to display
-    const bookElement = displayBookWithElements(book);
-    htmlElements.main.items.appendChild(bookElement);
-  }
+       // Loop through extracted books and display each one
+        for (let i = totalBooksShown; i < totalBooksShown + booksToDisplay; i++) {
+          const book = filteredBooks[i];
 
-  // Update the total books shown
-  totalBooksShown += booksToDisplay;
+          // Break if there are no more books to display
+          if (!book) break; 
+          const bookElement = displayBookWithElements(book);
+          htmlElements.main.items.appendChild(bookElement);
+        }
 
-  // Update the "Show more" button text
-  htmlElements.main.button.innerText = `Show more (${
-    remainingBooks - booksToDisplay
+        // Update the total number of books shown
+          totalBooksShown += booksToDisplay;
+
+        // Update the "Show more" button text
+            htmlElements.main.button.innerText = `Show more (${
+            remainingBooks - booksToDisplay
   })`;
 
-  // Disable the "Show more" button if there are no more books to show
-  if (remainingBooks - booksToDisplay <= 0) {
-    htmlElements.main.button.disabled = true;
-  }
+        // Disable the "Show more" button if there are no more books to show
+        if (remainingBooks - booksToDisplay <= 0) {
+          htmlElements.main.button.disabled = true;
+        }
 }
 
-// Function to open the search overlay
+/**
+ * Opens the search overlay and optionally resets search fields.
+ */
 function openSearchOverlay() {
-  // Reset the search fields when opening the overlay (optional)
-  htmlElements.search.title.value = "";
-  htmlElements.search.genre.value = "";
-  htmlElements.search.author.value = "";
+  
+      htmlElements.search.title.value = "";
+      htmlElements.search.genre.value = "";
+      htmlElements.search.author.value = "";
 
-  // Show the search overlay
-  htmlElements.search.overlay.style.display = "block";
-
-  // Add a class to disable the page
-  document.body.classList.add("disabled-page");
+      // Show the search overlay
+      htmlElements.search.overlay.style.display = "block";
 }
 
-// Event listener to open the search overlay when a button is clicked
-htmlElements.header.search.addEventListener("click", openSearchOverlay);
+      // This event listener opens the search overlay when a button is clicked
+      htmlElements.header.search.addEventListener("click", openSearchOverlay);
 
-// Event listener to close the search overlay when the cancel button is clicked
-htmlElements.search.cancel.addEventListener("click", () => {
-
-  htmlElements.search.overlay.style.display = "none";// Hide the search overlay
-  document.body.classList.remove("disabled-page");// Remove the class to enable the page
+      // an event listener to focus on the search input when overlay opens.
+      htmlElements.header.search.addEventListener("click", () => {
+      htmlElements.search.search.focus();
+      htmlElements.search.overlay.showModal();
+});
+      //An event listener to close the search overlay when the search button is clicked
+      htmlElements.search.search.addEventListener("click", () => {
+      htmlElements.search.overlay.close();
 });
 
-// Function to filter books based on search criteria
+/**
+ * Closes the search overlay and hide it.
+*/
+function closeSearchOverlay() {
+  
+        htmlElements.search.overlay.style.display = "none";
+
+
+      }
+         htmlElements.search.cancel.addEventListener("click", closeSearchOverlay);
+
+      // Event listener to close the search overlay when the search input is clicked
+        htmlElements.search.cancel.addEventListener("click", () => {
+        htmlElements.search.overlay.close();
+});
+
+
+/**
+ * Get the search input values and filter and display books based on search criteria.
+ */
 function filterBooks() {
-  // Get the search input values
-  const title = htmlElements.search.title.value.toLowerCase();
-  const genreId = htmlElements.search.genre.value; // Get genre ID, not lowercase
-  const author = htmlElements.search.author.value.toLowerCase();
+      
+      const title = htmlElements.search.title.value.toLowerCase();
+      const genreId = htmlElements.search.genre.value; 
+      const author = htmlElements.search.author.value.toLowerCase();
 
-  // Filter the books based on the criteria
-  const filteredBooks = books.filter((book) => {
-    const bookTitle = book.title.toLowerCase();
-    const bookGenres = book.genres.map((genreId) =>
-      genres[genreId].toLowerCase()
-    );
-    const bookAuthor = book.author.toLowerCase();
-    const isGenreMatch =
-      genreId === "" || bookGenres.includes(genres[genreId].toLowerCase());
+          const filteredBooks = books.filter((book) => {
+          const bookTitle = book.title.toLowerCase();
+          const bookGenres = book.genres.map((genreId) =>
+            genres[genreId].toLowerCase()
+          );
+          const bookAuthor = book.author.toLowerCase();
+          const isGenreMatch =
+            genreId === "" || bookGenres.includes(genres[genreId].toLowerCase());
 
-    return (
-      bookTitle.includes(title) && isGenreMatch && bookAuthor.includes(author)
-    );
+          return (
+            bookTitle.includes(title) && isGenreMatch && bookAuthor.includes(author)
+          );
   });
 
-  // Update the extracted books with the filtered books
-  extracted.length = 0;
-  Array.prototype.push.apply(extracted, filteredBooks.slice(0, BOOKS_PER_PAGE));
-  totalBooksShown = BOOKS_PER_PAGE;
+        // Update the extracted books with the filtered books
+        extracted.length = 0;
+        Array.prototype.push.apply(extracted, filteredBooks.slice(0, BOOKS_PER_PAGE));
+        totalBooksShown = BOOKS_PER_PAGE;
 
-  // Clear the existing book list before displaying filtered books
-  htmlElements.main.items.innerHTML = "";
+       // Clear the existing book list before displaying filtered books
+        htmlElements.main.items.innerHTML = "";
 
-  // Display the filtered books
-  for (let i = 0; i < BOOKS_PER_PAGE; i++) {
-    const book = extracted[i];
-    if (!book) break; // Break if there are no more books to display
-    const bookElement = displayBookWithElements(book);
-    htmlElements.main.items.appendChild(bookElement);
-  }
+      // Display the filtered books
+      for (let i = 0; i < BOOKS_PER_PAGE; i++) {
+        const book = extracted[i];
+        if (!book) break;
+        const bookElement = displayBookWithElements(book);
+        htmlElements.main.items.appendChild(bookElement);
+      }
 
-  // Update the "Show more" button text
-  const remainingBooks = filteredBooks.length - totalBooksShown;
-  const buttonText = `Show more (${remainingBooks > 0 ? remainingBooks : 0})`;
-  htmlElements.main.button.innerText = buttonText;
+      // Update the "Show more" button text
+      const remainingBooks = filteredBooks.length - totalBooksShown;
+      const buttonText = `Show more (${remainingBooks > 0 ? remainingBooks : 0})`;
+      htmlElements.main.button.innerText = buttonText;
 
-  // Disable the "Show more" button if there are no more books to show
-  htmlElements.main.button.disabled = remainingBooks <= 0;
+      // Disable the "Show more" button if there are no more books to show
+      htmlElements.main.button.disabled = remainingBooks <= 0;
 
-  // Close the search overlay after filtering (optional)
-  htmlElements.search.overlay.style.display = "none";
+      // Close the search overlay after filtering (optional)
+      htmlElements.search.overlay.style.display = "none";
 }
 
-// Event listener to trigger the filterBooks function when the search button is clicked
-htmlElements.search.search.addEventListener("click", (event) => {
-  event.preventDefault();
-  filterBooks(); // Call the filterBooks function to filter books
+      // Event listener to trigger the filterBooks function when the search button is clicked
+      htmlElements.search.search.addEventListener("click", (event) => {
+      event.preventDefault();
+      filterBooks();
 });
 
-//Event listener to trigger the filterBooks function when the search form is submitted
-htmlElements.search.form.addEventListener("submit", (event) => {
-  event.preventDefault(); // Prevent the form from submitting
-  filterBooks();
+      //Event listener to trigger the filterBooks function when the search form is submitted
+      htmlElements.search.form.addEventListener("submit", (event) => {
+      event.preventDefault(); // Prevent the form from submitting
+      filterBooks();
 });
 
 function populateAuthorOptions() {
-  const authorSelect = htmlElements.search.author;
-  authorSelect.innerHTML = '<option value="">All Authors</option>'; // Clear existing options
 
-  for (const authorId in authors) {
-    if (authors.hasOwnProperty(authorId)) {
-      const authorName = authors[authorId];
-      const option = document.createElement("option");
-      option.value = authorId;
-      option.textContent = authorName;
-      authorSelect.appendChild(option);
-    }
-  }
+      const authorSelect = htmlElements.search.author;
+      authorSelect.innerHTML = '<option value="">All Authors</option>'; 
+      for (const authorId in authors) {
+        if (authors.hasOwnProperty(authorId)) {
+          const authorName = authors[authorId];
+          const option = document.createElement("option");
+          option.value = authorId;
+          option.textContent = authorName;
+          authorSelect.appendChild(option);
+        }
+      }
 }
 // Call the function to populate genre options
 populateAuthorOptions();
@@ -304,7 +346,7 @@ populateAuthorOptions();
 //Function to populate the genre select element
 function populateGenreOptions() {
   const genreSelect = htmlElements.search.genre;
-  genreSelect.innerHTML = '<option value="">All Genres</option>'; // Clear existing options
+  genreSelect.innerHTML = '<option value="">All Genres</option>'; 
 
   for (const genreId in genres) {
     if (genres.hasOwnProperty(genreId)) {
