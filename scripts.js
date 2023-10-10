@@ -89,6 +89,9 @@ htmlElements.settings.form.addEventListener("submit", (event) => {
       "--color-dark",
       themes[submit.theme][1]
     );
+    
+    // Close the settings modal after saving
+    htmlElements.settings.overlay.close();
 });
 
 // Opens settings and focuses on themes
